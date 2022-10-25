@@ -29,6 +29,8 @@ iPeriod = 0
 
 gStyle.SetOptFit(0)
 
+outputDir = "./output_plots/"
+
 def loadcanvas(name):
   canvas = TCanvas(name,name,400,20,1400,1000)
   canvas.SetFillColor(0)
@@ -63,8 +65,8 @@ eosDir='root://cmsxrootd.fnal.gov//store/user/ddicroce/test'
 files_ = []
 firstfile = True
 #filelist = '/uscms/home/ddicroce/nobackup/TauClassifier/CMSSW_10_2_20_UL/src/MLAnalyzer/list_HTauTau_biased.txt'
+filelist = './list_jpsi.txt'
 #filelist= 'testlist_sim_Jul14.txt'
-filelist = './list_minisample.txt'
 with open(filelist) as list_:
     content = list_.readlines()
 paths = [x.strip() for x in content] 
@@ -116,7 +118,7 @@ massint = histos['mass'].Integral()
 massmax = 0
 for iBinX in range(histos['mass'].GetNbinsX()):
   binx.append(histos['mass'].GetXaxis().GetBinUpEdge(iBinX+1))
-  if (histos['mass'].GetBinContent(iBinX+1,iBinY+1) == 0): continue   #Avoids division by 0, in the case that the bin content was 0
+  if (histos['mass'].GetBinContent(iBinX+1) == 0): continue
   if (massmax < massint/histos['mass'].GetBinContent(iBinX+1)): 
     massmax = massint/histos['mass'].GetBinContent(iBinX+1)
 for iBinX in range(histos['mass_inverted'].GetNbinsX()):
@@ -128,7 +130,7 @@ ptint = histos['pt'].Integral()
 ptmax = 0
 for iBinX in range(histos['pt'].GetNbinsX()):
   biny.append(histos['pt'].GetXaxis().GetBinUpEdge(iBinX+1))
-  if (histos['pt'].GetBinContent(iBinX+1) == 0): continue   #Avoids division by 0, in the case that the bin content was 0
+  if (histos['pt'].GetBinContent(iBinX+1) == 0): continue
   if (ptmax < ptint/histos['pt'].GetBinContent(iBinX+1)):
     ptmax = ptint/histos['pt'].GetBinContent(iBinX+1)
 for iBinX in range(histos['pt_inverted'].GetNbinsX()):
@@ -147,8 +149,8 @@ histos['mVSpT'].SetMinimum(0)
 histos['mVSpT'].Draw('COLZ TEXT')
 CMS_lumi.CMS_lumi(canvas, iPeriod, iPos)
 canvas.Update()
-canvas.SaveAs('a_massVspT_biased.root')
-canvas.SaveAs('a_massVspT_biased.png')
+canvas.SaveAs(outputDir+'a_massVspT_biased.root')
+canvas.SaveAs(outputDir+'a_massVspT_biased.png')
 
 canvas = loadcanvas("c2")
 canvas.cd()
@@ -163,8 +165,8 @@ legend.AddEntry(histos['mass'], 'Biased','lf')
 CMS_lumi.CMS_lumi(canvas, iPeriod, iPos)
 canvas.Update()
 legend.Draw()
-canvas.SaveAs('a_m_biased.root')
-canvas.SaveAs('a_m_biased.png')
+canvas.SaveAs(outputDir+'a_m_biased.root')
+canvas.SaveAs(outputDir+'a_m_biased.png')
 
 canvas = loadcanvas("c3")
 canvas.cd()
@@ -179,8 +181,8 @@ legend.AddEntry(histos['pt'], 'Biased','lf')
 CMS_lumi.CMS_lumi(canvas, iPeriod, iPos)
 canvas.Update()
 legend.Draw()
-canvas.SaveAs('a_pt_biased.root')
-canvas.SaveAs('a_pt_biased.png')
+canvas.SaveAs(outputDir+'a_pt_biased.root')
+canvas.SaveAs(outputDir+'a_pt_biased.png')
 
 canvas = loadcanvas("c4")
 canvas.cd()
@@ -190,8 +192,8 @@ histos['mVSpT_ratio'].SetMinimum(0)
 histos['mVSpT_ratio'].Draw('COLZ TEXT')
 CMS_lumi.CMS_lumi(canvas, iPeriod, iPos)
 canvas.Update()
-canvas.SaveAs('a_massVspT_ratio_biased.root')
-canvas.SaveAs('a_massVspT_ratio_biased.png')
+canvas.SaveAs(outputDir+'a_massVspT_ratio_biased.root')
+canvas.SaveAs(outputDir+'a_massVspT_ratio_biased.png')
 
 canvas = loadcanvas("c5")
 canvas.cd()
@@ -205,8 +207,8 @@ legend.AddEntry(histos['mass_inverted'], 'Biased','lf')
 CMS_lumi.CMS_lumi(canvas, iPeriod, iPos)
 canvas.Update()
 legend.Draw()
-canvas.SaveAs('a_m_inverted_biased.root')
-canvas.SaveAs('a_m_inverted_biased.png')
+canvas.SaveAs(outputDir+'a_m_inverted_biased.root')
+canvas.SaveAs(outputDir+'a_m_inverted_biased.png')
 
 canvas = loadcanvas("c6")
 canvas.cd()
@@ -220,8 +222,8 @@ legend.AddEntry(histos['pt_inverted'], 'Biased','lf')
 CMS_lumi.CMS_lumi(canvas, iPeriod, iPos)
 canvas.Update()
 legend.Draw()
-canvas.SaveAs('a_pt_inverted_biased.root')
-canvas.SaveAs('a_pt_inverted_biased.png')
+canvas.SaveAs(outputDir+'a_pt_inverted_biased.root')
+canvas.SaveAs(outputDir+'a_pt_inverted_biased.png')
 
 canvas = loadcanvas("c7")
 canvas.cd()
@@ -231,5 +233,5 @@ histos['mVSpT_inverted'].SetMinimum(0)
 histos['mVSpT_inverted'].Draw('COLZ TEXT')
 CMS_lumi.CMS_lumi(canvas, iPeriod, iPos)
 canvas.Update()
-canvas.SaveAs('a_massVspT_inverted_biased.root')
-canvas.SaveAs('a_massVspT_inverted_biased.png')
+canvas.SaveAs(outputDir+'a_massVspT_inverted_biased.root')
+canvas.SaveAs(outputDir+'a_massVspT_inverted_biased.png')
