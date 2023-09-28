@@ -3,7 +3,9 @@ import os
 #cfg='RecHitAnalyzer/python/ConfFile_data_cfg.py'
 cfg='RecHitAnalyzer/python/ConfFile_cfg.py'
 #inputFiles_='file:../HToEleEle_m100To2000_pT20To120_ctau0To3_eta0To1p4_pythia8_noPU_biased.root'
-inputFiles_='file:../HToEleEle_m100To8000_pT20To120_ctau0To3_eta0To1p4_pythia8_noPU_biased.root'
+#inputFiles_='file:../HToEleEle_m100To8000_pT20To120_ctau0To3_eta0To1p4_pythia8_noPU_biased.root'
+#inputFiles_='file:../forColin/SIM_JpsiEE_13TeV_TuneCUETP8M1.root'
+inputFiles_='file:../SIM_HToEleEle_JpsiMass.root'
 
 maxEvents_=-1
 skipEvents_=0#

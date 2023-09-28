@@ -57,12 +57,14 @@ def loadlegend(top, bottom, left, right):
   return legend
 
 histos={}
-eosDir='root://cmsxrootd.fnal.gov//store/user/ddicroce/test'
+eosDir='root://cmsxrootd.fnal.gov//store/user/ccrovell/test'
 #eosDir='/eos/uscms/store/user/ddicroce/test'
 
 files_ = []
 firstfile = True
-filelist = '/uscms/home/ddicroce/nobackup/TauClassifier/CMSSW_10_2_20_UL/src/MLAnalyzer/list_HTauTau_unbiased.txt'
+#filelist = '/uscms/home/ddicroce/nobackup/TauClassifier/CMSSW_10_2_20_UL/src/MLAnalyzer/list_HTauTau_unbiased.txt'
+#filelist = './list_prod_HToEleEle_biased.txt'
+filelist = './list_diele_ntupler_unbiased.txt'
 with open(filelist) as list_:
     content = list_.readlines()
 paths = [x.strip() for x in content] 

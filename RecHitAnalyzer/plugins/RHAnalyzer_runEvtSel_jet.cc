@@ -23,7 +23,7 @@ vector<int>   vFailedJetIdx_;
 //const std::string jetSelection = "dijet_ditau";
 //const std::string jetSelection = "dijet_tau_massregression";
 const std::string jetSelection = "dijet_ele_massregression";
-
+//const std::string jetSelection = "dijet_pi0_gamma";
 
 // Initialize branches _____________________________________________________//
 void RecHitAnalyzer::branchesEvtSel_jet ( TTree* tree, edm::Service<TFileService> &fs ) {
@@ -43,6 +43,8 @@ void RecHitAnalyzer::branchesEvtSel_jet ( TTree* tree, edm::Service<TFileService
     branchesEvtSel_jet_dijet_tau_massregression( tree, fs );
   } else if ( jetSelection == "dijet_ele_massregression" ) {
     branchesEvtSel_jet_dijet_ele_massregression( tree, fs );
+  } else if ( jetSelection == "dijet_pi0_gamma" ) {
+    branchesEvtSel_jet_dijet_pi0_gamma( tree, fs );
   } else {
     branchesEvtSel_jet_dijet( tree, fs );
   }
@@ -68,6 +70,9 @@ bool RecHitAnalyzer::runEvtSel_jet ( const edm::Event& iEvent, const edm::EventS
   } else if ( jetSelection == "dijet_ele_massregression" ) {
     hasPassed = runEvtSel_jet_dijet_ele_massregression( iEvent, iSetup );
     if ( debug && hasPassed ) std::cout << "!!!!!!   JET PASSED ELE SELECTION! " << std::endl;
+  } else if ( jetSelection == "dijet_pi0_gamma" ) {
+    hasPassed = runEvtSel_jet_dijet_pi0_gamma( iEvent, iSetup );
+    if ( debug && hasPassed ) std::cout << "!!!!!!   JET PASSED GAMMA SELECTION! " << std::endl;
   } else {
     hasPassed = runEvtSel_jet_dijet( iEvent, iSetup );
   }
@@ -207,6 +212,8 @@ bool RecHitAnalyzer::runEvtSel_jet ( const edm::Event& iEvent, const edm::EventS
     fillEvtSel_jet_dijet_tau_massregression( iEvent, iSetup );
   } else if ( jetSelection == "dijet_ele_massregression" ) {
     fillEvtSel_jet_dijet_ele_massregression( iEvent, iSetup );
+  } else if ( jetSelection == "dijet_pi0_gamma" ) {
+    fillEvtSel_jet_dijet_pi0_gamma( iEvent, iSetup );
   } else {
     fillEvtSel_jet_dijet( iEvent, iSetup );
   }
