@@ -37,6 +37,7 @@ RecHitAnalyzer::RecHitAnalyzer(const edm::ParameterSet& iConfig)
   pfCandidatesToken_      = consumes<edm::View<reco::Candidate> >(iConfig.getParameter<edm::InputTag>("srcPFCandidates"));
 
   vertexCollectionT_      = consumes<reco::VertexCollection>(iConfig.getParameter<edm::InputTag>("vertexCollection"));
+  secVertexCollectionT_   = consumes<reco::VertexCompositePtrCandidateCollection>(iConfig.getParameter<edm::InputTag>("secVertexCollection"));
 
   recoJetsT_              = consumes<edm::View<reco::Jet> >(iConfig.getParameter<edm::InputTag>("recoJetsForBTagging"));
   jetTagCollectionT_      = consumes<reco::JetTagCollection>(iConfig.getParameter<edm::InputTag>("jetTagCollection"));
@@ -44,10 +45,12 @@ RecHitAnalyzer::RecHitAnalyzer(const edm::ParameterSet& iConfig)
 
   siPixelRecHitCollectionT_ = consumes<SiPixelRecHitCollection>(iConfig.getParameter<edm::InputTag>("siPixelRecHitCollection"));
 
-  //siStripRecHitCollectionT_ = iConfig.getParameter<std::vector<edm::InputTag> >("siStripRecHitCollection");
+  //siStripRecHitCollectionT_ = consumes<SiStripRecHit2DCollection>(iConfig.getParameter<std::vector<edm::InputTag> >("siStripRecHitCollection"));
   siStripMatchedRecHitCollectionT_ = consumes<SiStripMatchedRecHit2DCollection>(iConfig.getParameter<edm::InputTag>("siStripMatchedRecHitCollection"));
   siStripRPhiRecHitCollectionT_    = consumes<SiStripRecHit2DCollection>(iConfig.getParameter<edm::InputTag>("siStripRphiRecHits"));
+  siStripUnmatchedRPhiRecHitCollectionT_ = consumes<SiStripRecHit2DCollection>(iConfig.getParameter<edm::InputTag>("siStripUnmatchedRphiRecHits"));
   siStripStereoRecHitCollectionT_  = consumes<SiStripRecHit2DCollection>(iConfig.getParameter<edm::InputTag>("siStripStereoRecHits"));
+  siStripUnmatchedStereoRecHitCollectionT_  = consumes<SiStripRecHit2DCollection>(iConfig.getParameter<edm::InputTag>("siStripUnmatchedStereoRecHits"));
  
   metCollectionT_           = consumes<reco::PFMETCollection>(iConfig.getParameter<edm::InputTag>("metCollection"));
 
@@ -76,7 +79,12 @@ RecHitAnalyzer::RecHitAnalyzer(const edm::ParameterSet& iConfig)
   metSigAlgo_               = new metsig::METSignificance(iConfig);
 
   //johnda add configuration
+  //debug      = iConfig.getParameter<bool>("isDebug");
   mode_      = iConfig.getParameter<std::string>("mode");
+  task_      = iConfig.getParameter<std::string>("task");
+  isSignal_  = iConfig.getParameter<bool>("isSignal");
+  isW_       = iConfig.getParameter<bool>("isW");
+  isttbar_   = iConfig.getParameter<bool>("isttbar");
   minJetPt_  = iConfig.getParameter<double>("minJetPt");
   maxJetEta_ = iConfig.getParameter<double>("maxJetEta");
   z0PVCut_   = iConfig.getParameter<double>("z0PVCut");
@@ -154,6 +162,7 @@ RecHitAnalyzer::RecHitAnalyzer(const edm::ParameterSet& iConfig)
   //branchesTRKvolumeAtEBEE(RHTree, fs);
   //branchesTRKvolumeAtECAL(RHTree, fs);
   branchesJetInfoAtECALstitched( RHTree, fs);
+  branchesScalarInfo( RHTree, fs);  
   branchesTRKlayersAtECALstitched(RHTree, fs);
 
   // For FC inputs
@@ -178,8 +187,7 @@ RecHitAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
   nTotal++;
   using namespace edm;
-
-  // ----- Apply event selection cuts ----- //
+ // ----- Apply event selection cuts ----- //
 
   bool passedSelection = false;
   if ( doJets_ ) {
@@ -212,6 +220,7 @@ RecHitAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   //fillTRKvolumeAtEBEE( iEvent, iSetup );
   //fillTRKvolumeAtECAL( iEvent, iSetup );
   fillJetInfoAtECALstitched( iEvent, iSetup );
+  fillScalarInfo( iEvent, iSetup );
   for (unsigned int i=0;i<Nhitproj;i++)
   {
     fillTRKlayersAtECALstitched( iEvent, iSetup, i );

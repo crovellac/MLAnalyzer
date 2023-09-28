@@ -64,7 +64,13 @@
 #include "DQM/HcalCommon/interface/Constants.h"
 
 #include "FWCore/Framework/interface/Event.h"
+#include "FWCore/Framework/interface/EventSetup.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
+#include "FWCore/Framework/interface/ConsumesCollector.h"
+
+#include "FWCore/Utilities/interface/Exception.h"
+#include "DataFormats/PatCandidates/interface/Jet.h"
+#include "DataFormats/PatCandidates/interface/PackedCandidate.h"
 
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/Utilities/interface/InputTag.h"
@@ -146,6 +152,10 @@
 
 #include "DataFormats/VertexReco/interface/Vertex.h"
 #include "DataFormats/VertexReco/interface/VertexFwd.h"
+#include "DataFormats/Candidate/interface/VertexCompositePtrCandidate.h"
+#include "DataFormats/GeometryCommonDetAlgo/interface/Measurement1D.h"
+#include "RecoVertex/VertexTools/interface/VertexDistanceXY.h"
+#include "RecoVertex/VertexTools/interface/VertexDistance3D.h"
 
 using namespace classic_svFit;
 
@@ -192,6 +202,7 @@ class RecHitAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
     edm::EDGetTokenT<reco::GenJetCollection> genJetCollectionT_;
     edm::EDGetTokenT<reco::TrackCollection> trackCollectionT_;
     edm::EDGetTokenT<reco::VertexCollection> vertexCollectionT_;
+    edm::EDGetTokenT<reco::VertexCompositePtrCandidateCollection> secVertexCollectionT_;
     edm::ESInputTag transientTrackBuilderT_;
     edm::EDGetTokenT<edm::View<reco::Jet> > recoJetsT_;
     edm::EDGetTokenT<reco::JetTagCollection> jetTagCollectionT_;
@@ -227,9 +238,10 @@ class RecHitAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
     edm::EDGetTokenT<SiPixelRecHitCollection> siPixelRecHitCollectionT_;
     edm::EDGetTokenT<SiStripMatchedRecHit2DCollection> siStripMatchedRecHitCollectionT_;
     edm::EDGetTokenT<SiStripRecHit2DCollection> siStripRPhiRecHitCollectionT_;
+    edm::EDGetTokenT<SiStripRecHit2DCollection> siStripUnmatchedRPhiRecHitCollectionT_;
     edm::EDGetTokenT<SiStripRecHit2DCollection> siStripStereoRecHitCollectionT_;
+    edm::EDGetTokenT<SiStripRecHit2DCollection> siStripUnmatchedStereoRecHitCollectionT_;
 
-    //std::vector<edm::InputTag> siStripRecHitCollectionT_;
     //edm::InputTag trackTags_; //used to select what tracks to read from configuration file
 
     // Diagnostic histograms
@@ -264,6 +276,7 @@ class RecHitAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
     //void branchesTRKvolumeAtECAL( TTree*, edm::Service<TFileService>& );
     void branchesJetInfoAtECALstitched   ( TTree*, edm::Service<TFileService>& );
     void branchesTRKlayersAtECALstitched( TTree*, edm::Service<TFileService>& );
+    void branchesScalarInfo( TTree*, edm::Service<TFileService>& );
 
     bool runEvtSel          ( const edm::Event&, const edm::EventSetup& );
     bool runEvtSel_jet      ( const edm::Event&, const edm::EventSetup& );
@@ -285,7 +298,9 @@ class RecHitAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
     void fillJetInfoAtECALstitched   ( const edm::Event&, const edm::EventSetup& );
     //void fillTRKlayersAtECALstitched( TTree*, edm::Service<TFileService>& );
     void fillTRKlayersAtECALstitched( const edm::Event&, const edm::EventSetup&, unsigned int proj );
+    void fillScalarInfo( const edm::Event&, const edm::EventSetup& );
 
+    //bool debug;
     const reco::PFCandidate* getPFCand(edm::Handle<PFCollection> pfCands, float eta, float phi, float& minDr, bool debug = false);
     const reco::Track* getTrackCand(edm::Handle<reco::TrackCollection> trackCands, float eta, float phi, float& minDr, bool debug = false);
     int   getTruthLabel(const reco::PFJetRef& recJet, edm::Handle<reco::GenParticleCollection> genParticles, float dRMatch = 0.4, bool debug = false);
@@ -295,35 +310,59 @@ class RecHitAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
 
     // Jet level functions
     std::string mode_;  // EventLevel / JetLevel
+    std::string task_;
+    bool isSignal_;  
+    bool isW_;  
+    bool isttbar_;  
     bool doJets_;
     int  nJets_;
     double minJetPt_;
     double maxJetEta_;
     double z0PVCut_;
     std::vector<int> vJetIdxs;
+    std::vector<int> passedJetIdxs;
     void branchesEvtSel_jet_dijet      ( TTree*, edm::Service<TFileService>& );
     void branchesEvtSel_jet_dijet_tau( TTree*, edm::Service<TFileService>& );
+    void branchesEvtSel_jet_dijet_top( TTree*, edm::Service<TFileService>& );
     void branchesEvtSel_jet_dijet_ditau( TTree*, edm::Service<TFileService>& );
     void branchesEvtSel_jet_dijet_tau_massregression( TTree*, edm::Service<TFileService>& );
     void branchesEvtSel_jet_dijet_ele_massregression( TTree*, edm::Service<TFileService>& );
-    void branchesEvtSel_jet_dijet_pi0_gamma( TTree*, edm::Service<TFileService>& );
+    void branchesEvtSel_jet_ele_classification( TTree*, edm::Service<TFileService>& );
+    void branchesEvtSel_jet_background( TTree*, edm::Service<TFileService>& );
     void branchesEvtSel_jet_dijet_gg_qq( TTree*, edm::Service<TFileService>& );
+    void branchesEvtSel_jet_qcd( TTree*, edm::Service<TFileService>& );
+    void branchesEvtSel_jet_photonSel( TTree*, edm::Service<TFileService>& );
     bool runEvtSel_jet_dijet      ( const edm::Event&, const edm::EventSetup& );
     bool runEvtSel_jet_dijet_tau( const edm::Event&, const edm::EventSetup& );
+    bool runEvtSel_jet_dijet_top( const edm::Event&, const edm::EventSetup& );
     bool runEvtSel_jet_dijet_ditau( const edm::Event&, const edm::EventSetup& );
     bool runEvtSel_jet_dijet_tau_massregression( const edm::Event&, const edm::EventSetup& );
     bool runEvtSel_jet_dijet_ele_massregression( const edm::Event&, const edm::EventSetup& );
-    bool runEvtSel_jet_dijet_pi0_gamma( const edm::Event&, const edm::EventSetup& );
+    bool runEvtSel_jet_ele_classification( const edm::Event&, const edm::EventSetup& );
+    bool runEvtSel_jet_background( const edm::Event&, const edm::EventSetup& );
     bool runEvtSel_jet_dijet_gg_qq( const edm::Event&, const edm::EventSetup& );
+    bool runEvtSel_jet_qcd( const edm::Event&, const edm::EventSetup& );
+    bool runEvtSel_jet_photonSel( const edm::Event&, const edm::EventSetup& );
     void fillEvtSel_jet_dijet      ( const edm::Event&, const edm::EventSetup& );
     void fillEvtSel_jet_dijet_tau( const edm::Event&, const edm::EventSetup& );
+    void fillEvtSel_jet_dijet_top( const edm::Event&, const edm::EventSetup& );
     void fillEvtSel_jet_dijet_ditau( const edm::Event&, const edm::EventSetup& );
     void fillEvtSel_jet_dijet_tau_massregression( const edm::Event&, const edm::EventSetup& );
     void fillEvtSel_jet_dijet_ele_massregression( const edm::Event&, const edm::EventSetup& );
-    void fillEvtSel_jet_dijet_pi0_gamma( const edm::Event&, const edm::EventSetup& );
+    void fillEvtSel_jet_ele_classification( const edm::Event&, const edm::EventSetup& );
+    //void fillEvtSel_jet_ele_classification( const edm::Event&, const edm::EventSetup&, std::vector<int>, std::vector<int> );
+    void fillEvtSel_jet_background( const edm::Event&, const edm::EventSetup& );
     void fillEvtSel_jet_dijet_gg_qq( const edm::Event&, const edm::EventSetup& );
+    void fillEvtSel_jet_qcd( const edm::Event&, const edm::EventSetup& );
+    void fillEvtSel_jet_photonSel( const edm::Event&, const edm::EventSetup& );
 
+    //functions for secondary vertices
+    static Measurement1D vertexDxy(const reco::VertexCompositePtrCandidate &svcand, const reco::Vertex &pv);
+    static Measurement1D vertexD3d(const reco::VertexCompositePtrCandidate &svcand, const reco::Vertex &pv);
+    static float vertexDdotP(const reco::VertexCompositePtrCandidate &sv, const reco::Vertex &pv);
+    
     int nTotal, nPassed;
+    //bool debug;
 
     std::map<uint32_t,SiPixelRecHitModule*> thePixelStructure;
 
@@ -345,8 +384,8 @@ class RecHitAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
 //
 // constants, enums and typedefs
 //
-static const bool debug = true;
-//static const bool debug = false;
+//static const bool debug = true;
+static const bool debug = false;
 
 static const int nEE = 2;
 static const int nTOB = 6;
