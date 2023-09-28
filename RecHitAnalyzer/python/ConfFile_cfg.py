@@ -31,10 +31,13 @@ process.maxEvents = cms.untracked.PSet(
 
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(
-      options.inputFiles
+      #options.inputFiles
+      open('../../../list_sim_aee_hightpt.txt').readlines()
+      #'file:SIM_SinglePi0_ptgun.root'
       )
-    , skipEvents = cms.untracked.uint32(options.skipEvents)
-    )
+, skipEvents = cms.untracked.uint32(options.skipEvents)
+)
+
 print " >> Loaded",len(options.inputFiles),"input files from list."
 
 process.load("MLAnalyzer.RecHitAnalyzer.RHAnalyzer_cfi")
