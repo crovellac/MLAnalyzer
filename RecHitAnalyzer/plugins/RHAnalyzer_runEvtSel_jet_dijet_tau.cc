@@ -107,13 +107,13 @@ void RecHitAnalyzer::branchesEvtSel_jet_dijet_tau ( TTree* tree, edm::Service<TF
 } // branchesEvtSel_jet_dijet_tau()
 
 
-float catchInfs(const float& in, float replace_value=0){
+/*float catchInfs(const float& in, float replace_value=0){
   if(std::isinf(in) || std::isnan(in))
     return replace_value;
   else if(in < -1e32 || in > 1e32)
     return replace_value;
   return in;
-}
+}*/
 
 // Define struct to handle mapping for gen pho<->matched reco photons<->matched presel photons
 struct jet_tau_map {
@@ -158,7 +158,7 @@ bool RecHitAnalyzer::runEvtSel_jet_dijet_tau( const edm::Event& iEvent, const ed
     if ( std::abs(iGen->pdgId()) == 12 || std::abs(iGen->pdgId()) == 14 || std::abs(iGen->pdgId()) == 16 ) continue;
     
     if (isSignal_ && !(std::abs(iGen->pdgId()) == 15 && iGen->status() == 2) ) continue;      // for drell yan and HiggsToTauTau
-    if ( !isSignal_ && !isW_ && !( iGen->status() == 23 ) ) continue;                         //for QCD background
+    if ( !isSignal_ && !isW_ && !( iGen->status() == 23 ) ) continue;                         //for QCD and ttbar background
     if ( !isSignal_ &&  isW_ && !( iGen->status() == 71 ) ) continue;                         //only for W + jet background
     
     vGenTauIdxs.push_back(iG);
@@ -523,6 +523,7 @@ void RecHitAnalyzer::fillEvtSel_jet_dijet_tau ( const edm::Event& iEvent, const 
   
 } // fillEvtSel_jet_dijet_tau()
 
+/*
 Measurement1D RecHitAnalyzer::vertexDxy(const reco::VertexCompositePtrCandidate &svcand, const reco::Vertex &pv)  {
   VertexDistanceXY dist;
   reco::Vertex::CovarianceMatrix csv; svcand.fillVertexCovariance(csv);
@@ -542,4 +543,4 @@ float RecHitAnalyzer::vertexDdotP(const reco::VertexCompositePtrCandidate &sv, c
   reco::Candidate::Vector d(sv.vx() - pv.x(), sv.vy() - pv.y(), sv.vz() - pv.z());
   return p.Unit().Dot(d.Unit());
 }
-
+*/

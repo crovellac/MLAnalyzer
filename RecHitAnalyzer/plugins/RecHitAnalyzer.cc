@@ -84,7 +84,7 @@ RecHitAnalyzer::RecHitAnalyzer(const edm::ParameterSet& iConfig)
   task_      = iConfig.getParameter<std::string>("task");
   isSignal_  = iConfig.getParameter<bool>("isSignal");
   isW_       = iConfig.getParameter<bool>("isW");
-  isttbar_   = iConfig.getParameter<bool>("isttbar");
+  isBoostedTop_   = iConfig.getParameter<bool>("isBoostedTop");
   minJetPt_  = iConfig.getParameter<double>("minJetPt");
   maxJetEta_ = iConfig.getParameter<double>("maxJetEta");
   z0PVCut_   = iConfig.getParameter<double>("z0PVCut");
@@ -387,6 +387,27 @@ float RecHitAnalyzer::getBTaggingValue(const reco::PFJetRef& recJet, edm::Handle
   }    
 
   return -99;
+}
+
+
+Measurement1D RecHitAnalyzer::vertexDxy(const reco::VertexCompositePtrCandidate &svcand, const reco::Vertex &pv)  {
+  VertexDistanceXY dist;
+  reco::Vertex::CovarianceMatrix csv; svcand.fillVertexCovariance(csv);
+  reco::Vertex svtx(svcand.vertex(), csv);
+  return dist.distance(svtx, pv);
+}
+
+Measurement1D RecHitAnalyzer::vertexD3d(const reco::VertexCompositePtrCandidate &svcand, const reco::Vertex &pv)  {
+  VertexDistance3D dist;
+  reco::Vertex::CovarianceMatrix csv; svcand.fillVertexCovariance(csv);
+  reco::Vertex svtx(svcand.vertex(), csv);
+  return dist.distance(svtx, pv);
+}
+
+float RecHitAnalyzer::vertexDdotP(const reco::VertexCompositePtrCandidate &sv, const reco::Vertex &pv)  {
+  reco::Candidate::Vector p = sv.momentum();
+  reco::Candidate::Vector d(sv.vx() - pv.x(), sv.vy() - pv.y(), sv.vz() - pv.z());
+  return p.Unit().Dot(d.Unit());
 }
 
 //define this as a plug-in
